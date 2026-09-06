@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crystal Clicker</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <header class="game-header">
+            <h1>Crystal Clicker</h1>
+            <div class="stats">
+                <div class="points">Score: <span id="points">0</span></div>
+                <div class="time">Time: <span id="time">0:00</span></div>
+            </div>
+        </header>
+
+        <main class="game-main">
+            <div class="crystal-container">
+                <div id="crystal" class="crystal">
+                    <div class="crystal-glow"></div>
+                </div>
+                <div class="click-effect" id="clickEffect"></div>
+                <div class="enemies-container" id="enemiesContainer">
+                    <!-- Enemies will be added here via JS -->
+                </div>
+            </div>
+
+            <div class="health-container">
+                <div class="health-label">HP</div>
+                <div class="health-bar">
+                    <div class="health-fill" id="healthFill"></div>
+                    <div class="health-text">
+                        <span id="currentHp">25</span> / <span id="maxHp">25</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="damage-info">
+                <div>5 seconds damage: <span id="damagePerTick">2</span></div>
+                <div>Next damage in: <span id="damageTimer">5</span>s</div>
+            </div>
+
+            <div class="control-buttons">
+                <button class="control-btn" id="toggleUpgrades">🛒 Store</button>
+                <button class="control-btn" id="toggleStats">📊 Stats</button>
+                <button class="control-btn" id="toggleMusic">🎵 Music</button>
+            </div>
+        </main>
+
+        <!-- Upgrades Sidebar -->
+        <aside class="sidebar upgrades-sidebar" id="upgradesSidebar">
+            <div class="sidebar-header">
+                <h2>Upgrades</h2>
+                <button class="close-btn" id="closeUpgrades">×</button>
+            </div>
+            <div class="sidebar-content">
+                <div class="upgrade-item" id="upgradeMaxHp">
+                    <div class="upgrade-info">
+                        <h3>Max HP</h3>
+                        <p>+5 Max HP</p>
+                        <div class="upgrade-level">Level: <span id="maxHpLevel">0</span></div>
+                    </div>
+                    <button class="upgrade-btn" id="buyMaxHp">
+                        Buy (<span id="maxHpCost">50</span> points)
+                    </button>
+                </div>
+
+                <div class="upgrade-item" id="upgradeHealPower">
+                    <div class="upgrade-info">
+                        <h3>Heal Per Click</h3>
+                        <p>+0.1 heal per click</p>
+                        <div class="upgrade-level">Level: <span id="healPowerLevel">0</span></div>
+                    </div>
+                    <button class="upgrade-btn" id="buyHealPower">
+                        Buy (<span id="healPowerCost">60</span> points)
+                    </button>
+                </div>
+
+                <div class="upgrade-item" id="upgradePointsPerClick">
+                    <div class="upgrade-info">
+                        <h3>Points Per Click</h3>
+                        <p>+1 point per click</p>
+                        <div class="upgrade-level">Level: <span id="pointsPerClickLevel">0</span></div>
+                    </div>
+                    <button class="upgrade-btn" id="buyPointsPerClick">
+                        Buy (<span id="pointsPerClickCost">100</span> points)
+                    </button>
+                </div>
+
+                <div class="upgrade-item" id="upgradeDamagePerClick">
+                    <div class="upgrade-info">
+                        <h3>Damage Per Click</h3>
+                        <p>+0.5 damage per click</p>
+                        <div class="upgrade-level">Level: <span id="damagePerClickLevel">0</span></div>
+                    </div>
+                    <button class="upgrade-btn" id="buyDamagePerClick">
+                        Buy (<span id="damagePerClickCost">100</span> points)
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Stats Sidebar -->
+        <aside class="sidebar stats-sidebar" id="statsSidebar">
+            <div class="sidebar-header">
+                <h2>Stats</h2>
+                <button class="close-btn" id="closeStats">×</button>
+            </div>
+            <div class="sidebar-content">
+                <div class="stat-item">
+                    <span class="stat-label">Heal Per Click:</span>
+                    <span class="stat-value" id="statHealPerClick">0.1</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Points Per Click:</span>
+                    <span class="stat-value" id="statPointsPerClick">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Damage Per Click:</span>
+                    <span class="stat-value" id="statDamagePerClick">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Max HP:</span>
+                    <span class="stat-value" id="statMaxHp">25</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Active Enemies:</span>
+                    <span class="stat-value" id="statActiveEnemies">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Enemy Health:</span>
+                    <span class="stat-value" id="statEnemyHealth">3</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Spawn Rate:</span>
+                    <span class="stat-value" id="statSpawnTime">10s</span>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <div class="game-over" id="gameOver" style="display: none;">
+        <div class="game-over-content">
+            <h2>Game Over!</h2>
+            <p>You survived for <span id="finalTime"></span></p>
+            <p>Final score: <span id="finalPoints"></span></p>
+            <button onclick="restartGame()">Play Again</button>
+        </div>
+    </div>
+
+    <audio id="backgroundMusic" loop>
+        <source src="music.ogg" type="audio/ogg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script src="script.js"></script>
+</body>
+</html>

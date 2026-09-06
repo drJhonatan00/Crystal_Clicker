@@ -1,0 +1,534 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+    color: white;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.game-container {
+    display: grid;
+    grid-template-areas: 
+        "header header"
+        "main main";
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    min-height: 100vh;
+    gap: 20px;
+    padding: 20px;
+    position: relative;
+}
+
+.game-header {
+    grid-area: header;
+    text-align: center;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.game-header h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    background: linear-gradient(45deg, #9d4edd, #c77dff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    font-size: 1.2em;
+}
+
+.game-main {
+    grid-area: main;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    padding: 20px;
+}
+
+.crystal-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 400px;
+    height: 400px;
+}
+
+.crystal {
+    width: 200px;
+    height: 200px;
+    background: linear-gradient(45deg, #7209b7, #9d4edd, #c77dff);
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    cursor: pointer;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s ease;
+    box-shadow: 
+        0 0 30px rgba(157, 78, 221, 0.5),
+        inset 0 0 30px rgba(255, 255, 255, 0.2);
+    animation: float 3s ease-in-out infinite;
+    z-index: 2;
+}
+
+.crystal:hover {
+    transform: translate(-50%, -50%) scale(1.05);
+    box-shadow: 
+        0 0 40px rgba(157, 78, 221, 0.7),
+        inset 0 0 30px rgba(255, 255, 255, 0.3);
+}
+
+.crystal:active {
+    transform: translate(-50%, -50%) scale(0.95);
+}
+
+.crystal-glow {
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    background: linear-gradient(45deg, #7209b7, #9d4edd, #c77dff);
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    opacity: 0.3;
+    animation: pulse 2s ease-in-out infinite;
+    z-index: -1;
+}
+
+@keyframes float {
+    0%, 100% { transform: translate(-50%, -50%) translateY(0px); }
+    50% { transform: translate(-50%, -50%) translateY(-10px); }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.1); }
+}
+
+.click-effect {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    font-size: 2em;
+    font-weight: bold;
+    color: #c77dff;
+    opacity: 0;
+    z-index: 10;
+}
+
+.click-effect.show {
+    animation: clickPop 0.6s ease-out;
+}
+
+@keyframes clickPop {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(0.5);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -70%) scale(1.2);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -90%) scale(1);
+    }
+}
+
+.enemies-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.enemy {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 
+        0 0 20px rgba(239, 68, 68, 0.5),
+        inset 0 0 20px rgba(255, 255, 255, 0.2);
+    animation: enemyFloat 2s ease-in-out infinite;
+    z-index: 3;
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.enemy.sword {
+    background: linear-gradient(45deg, #dc2626, #ef4444, #f87171);
+}
+
+.enemy.bow {
+    background: linear-gradient(45deg, #22c55e, #4ade80, #86efac);
+}
+
+.enemy img {
+    width: 70%;
+    height: 70%;
+    object-fit: contain;
+    filter: invert(1);
+}
+
+.enemy:hover {
+    transform: scale(1.1);
+    box-shadow: 
+        0 0 30px rgba(239, 68, 68, 0.7),
+        inset 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.enemy:active {
+    transform: scale(0.9);
+}
+
+@keyframes enemyFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+}
+
+.enemy-health {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+}
+
+.enemy-health-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid #ef4444;
+}
+
+.enemy-health-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+    width: 100%;
+}
+
+@keyframes enemySpawn {
+    0% {
+        opacity: 0;
+        transform: scale(0);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.health-container {
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.health-label {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+    color: #c77dff;
+}
+
+.health-bar {
+    position: relative;
+    width: 100%;
+    height: 30px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    border: 2px solid #c77dff;
+    overflow: hidden;
+}
+
+.health-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff006e, #fb5607, #ffbe0b);
+    border-radius: 13px;
+    transition: width 0.3s ease;
+    width: 100%;
+}
+
+.health-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: bold;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.damage-info {
+    text-align: center;
+    font-size: 1.1em;
+    color: #ff6b6b;
+}
+
+.damage-info div {
+    margin: 5px 0;
+}
+
+.control-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.control-btn {
+    padding: 12px 24px;
+    background: linear-gradient(45deg, #7209b7, #9d4edd);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(157, 78, 221, 0.3);
+}
+
+.control-btn:hover {
+    background: linear-gradient(45deg, #9d4edd, #c77dff);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(157, 78, 221, 0.4);
+}
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    right: -400px;
+    width: 400px;
+    height: 100vh;
+    background: rgba(26, 26, 46, 0.95);
+    backdrop-filter: blur(10px);
+    border-left: 2px solid rgba(157, 78, 221, 0.3);
+    transition: right 0.3s ease;
+    z-index: 1000;
+    overflow-y: auto;
+}
+
+.sidebar.open {
+    right: 0;
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid rgba(157, 78, 221, 0.3);
+}
+
+.sidebar-header h2 {
+    color: #c77dff;
+    font-size: 1.8em;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: #c77dff;
+    font-size: 2em;
+    cursor: pointer;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.3s ease;
+}
+
+.close-btn:hover {
+    background: rgba(157, 78, 221, 0.2);
+}
+
+.sidebar-content {
+    padding: 20px;
+}
+
+.upgrade-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid rgba(157, 78, 221, 0.3);
+    transition: all 0.3s ease;
+}
+
+.upgrade-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(157, 78, 221, 0.6);
+}
+
+.upgrade-info h3 {
+    color: #c77dff;
+    margin-bottom: 5px;
+}
+
+.upgrade-info p {
+    color: #ccc;
+    font-size: 0.9em;
+    margin-bottom: 5px;
+}
+
+.upgrade-level {
+    font-size: 0.8em;
+    color: #999;
+}
+
+.upgrade-btn {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background: linear-gradient(45deg, #7209b7, #9d4edd);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.upgrade-btn:hover {
+    background: linear-gradient(45deg, #9d4edd, #c77dff);
+    transform: translateY(-2px);
+}
+
+.upgrade-btn:disabled {
+    background: #666;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(157, 78, 221, 0.2);
+}
+
+.stat-label {
+    color: #c77dff;
+    font-weight: bold;
+}
+
+.stat-value {
+    color: #fff;
+    font-weight: bold;
+}
+
+.game-over {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.game-over-content {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    border: 2px solid #c77dff;
+    box-shadow: 0 0 30px rgba(157, 78, 221, 0.5);
+}
+
+.game-over-content h2 {
+    color: #ff6b6b;
+    margin-bottom: 20px;
+    font-size: 2.5em;
+}
+
+.game-over-content p {
+    margin: 10px 0;
+    font-size: 1.2em;
+}
+
+.game-over-content button {
+    margin-top: 20px;
+    padding: 15px 30px;
+    background: linear-gradient(45deg, #7209b7, #9d4edd);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.game-over-content button:hover {
+    background: linear-gradient(45deg, #9d4edd, #c77dff);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .game-container {
+        padding: 10px;
+    }
+    
+    .crystal {
+        width: 150px;
+        height: 150px;
+    }
+    
+    .crystal-container {
+        width: 300px;
+        height: 300px;
+    }
+    
+    .stats {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .sidebar {
+        width: 100vw;
+        right: -100vw;
+    }
+    
+    .control-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
