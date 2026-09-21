@@ -45,3 +45,5 @@ As survival time increases, enemy spawn rates intensify and dynamic audio scalin
 
 ## Licence
 This project is licensed under the MIT License — feel free to fork, modify, and build upon it!
+
+<!-- Watashi ea watashi sore dake -->
