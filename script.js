@@ -1,4 +1,4 @@
-// Estado do jogo
+// ゲームの状態
 let gameState = {
     points: 0,
     currentHp: 25,
@@ -10,7 +10,7 @@ let gameState = {
     gameStartTime: Date.now(),
     isGameOver: false,
 
-    // Sistema de inimigos
+    // 敵システム
     enemies: [],
     nextEnemyId: 0,
 
@@ -21,48 +21,48 @@ let gameState = {
             image: 'sword_enemy.png',
             baseHealth: 3,
             damageAmount: 5,
-            attackInterval: 3000, // 3s
-            attackRange: 120, // raio em torno do cristal
+            attackInterval: 3000,
+            attackRange: 120,
             pointsOnDeath: 10,
             spawnStartMinute: 0,
-            baseSpawnInterval: 10000, // ms
+            baseSpawnInterval: 10000,
             healthIncreasePerMinute: 0.5,
-            spawnIntervalDecreasePerMinute: 1000 // ms/min
+            spawnIntervalDecreasePerMinute: 1000
         },
         bow: {
-            id: 'bow',
-            name: 'Bow Enemy',
-            image: 'bow_enemy.png',
-            baseHealth: 2.5,
-            damageAmount: 2,
-            attackInterval: 1500, // 1.5s
-            attackRange: 200,
-            pointsOnDeath: 15,
-            spawnStartMinute: 2,
-            baseSpawnInterval: 10000, // ms
-            healthIncreasePerMinute: 0.25, // efetivado a cada 2 min via Math.floor
-            spawnIntervalDecreasePerMinute: 1500 // ms/min
+            id: 'bow', name: 'Bow Enemy', image: 'bow_enemy.png', baseHealth: 2.5,
+            damageAmount: 2, attackInterval: 1500, attackRange: 200, pointsOnDeath: 15,
+            spawnStartMinute: 2, baseSpawnInterval: 10000,
+            healthIncreasePerMinute: 0.25, spawnIntervalDecreasePerMinute: 1500
+        },
+        shield: {
+            id: 'shield', name: 'Shield', image: 'shield_enemy.png', baseHealth: 5,
+            damageAmount: 0, attackInterval: Infinity, attackRange: 150, auraRadius: 125,
+            pointsOnDeath: 25, spawnStartSecond: 180, baseSpawnInterval: 18000
+        },
+        wizard: {
+            id: 'wizard', name: 'Wizard', image: 'wizard_enemy.png', baseHealth: 4,
+            damageAmount: 7, attackInterval: 6000, attackRange: 10000,
+            pointsOnDeath: 30, spawnStartSecond: 330, baseSpawnInterval: 20000
+        },
+        ghost: {
+            id: 'ghost', name: 'Ghost', image: 'ghost_enemy.png', baseHealth: Infinity,
+            damageAmount: 0, attackInterval: Infinity, attackRange: 220, auraRadius: 240,
+            effectDuration: 10000, lifetime: 15000, pointsOnDeath: 0,
+            spawnStartSecond: 420, baseSpawnInterval: 26000
+        },
+        dragon: {
+            id: 'dragon', name: 'Dragon', image: 'dragon_enemy.png', baseHealth: 2,
+            damageAmount: 0, attackInterval: 1000, attackRange: 0, pointsOnDeath: 40,
+            spawnStartSecond: 600, baseSpawnInterval: 25000
         }
     },
 
-    currentEnemyHealth: {
-        sword: 3,
-        bow: 2.5
-    },
-    currentSpawnInterval: {
-        sword: 10000,
-        bow: 10000
-    },
-    maxEnemiesPerType: {
-        sword: 4,
-        bow: 4
-    },
-    lastSpawnTime: {
-        sword: 0,
-        bow: 0
-    },
+    currentEnemyHealth: { sword: 3, bow: 2.5, shield: 5, wizard: 4, ghost: Infinity, dragon: 2 },
+    currentSpawnInterval: { sword: 10000, bow: 10000, shield: 18000, wizard: 20000, ghost: 26000, dragon: 25000 },
+    maxEnemiesPerType: { sword: 4, bow: 4, shield: 2, wizard: 2, ghost: 1, dragon: 1 },
+    lastSpawnTime: { sword: 0, bow: 0, shield: 0, wizard: 0, ghost: 0, dragon: 0 },
 
-    // Upgrades
     upgrades: {
         maxHp: { level: 0, baseCost: 50, costMultiplier: 1.25, effect: 5 },
         healPower: { level: 0, baseCost: 60, costMultiplier: 1.25, effect: 0.1 },
@@ -71,7 +71,6 @@ let gameState = {
     }
 };
 
-// Elementos DOM
 const elements = {
     crystal: document.getElementById("crystal"),
     clickEffect: document.getElementById("clickEffect"),
@@ -115,17 +114,14 @@ const elements = {
     statSpawnTime: document.getElementById("statSpawnTime")
 };
 
-// Timers
 let damageTimer = 5;
 let gameTimer = 0;
-let lastMinuteUpdate = 0; // Adicionado para controlar a atualização por minuto
+let lastMinuteUpdate = 0;
 
-// Utilitário: garante número válido
 function ensureNumber(n, fallback) {
     return Number.isFinite(n) ? n : fallback;
 }
 
-// Custo do upgrade
 function getUpgradeCost(upgradeType) {
     const u = gameState.upgrades[upgradeType];
     return Math.floor(u.baseCost * Math.pow(u.costMultiplier, u.level));
@@ -137,7 +133,6 @@ function buyUpgrade(upgradeType) {
         gameState.points -= cost;
         u.level++;
 
-        // Aplica os efeitos conforme o tipo
         if (upgradeType === 'maxHp') {
             gameState.maxHp += u.effect;
             gameState.currentHp += u.effect;
@@ -153,7 +148,6 @@ function buyUpgrade(upgradeType) {
     }
 }
 
-// Posição alvo em torno do cristal
 function getEnemyPosition(index, total, attackRange) {
     const crystalRect = elements.crystal.getBoundingClientRect();
     const containerRect = elements.enemiesContainer.getBoundingClientRect();
@@ -164,7 +158,7 @@ function getEnemyPosition(index, total, attackRange) {
     return { x: cx + Math.cos(angle) * r - 30, y: cy + Math.sin(angle) * r - 30 };
 }
 
-// Criação de inimigo
+
 function createEnemy(type) {
     const t = gameState.enemyTypes[type];
     const enemy = {
@@ -180,21 +174,40 @@ function createEnemy(type) {
         hasArrived: false,
         element: null,
         x: 0, y: 0, targetX: 0, targetY: 0,
-        speed: 150
+        speed: type === 'ghost' ? 190 : 150,
+        createdAt: Date.now(),
+        ghostEffectUntil: 0
     };
+    if (type === 'dragon') enemy.health = enemy.maxHealth = 2;
+    if (type === 'ghost') enemy.health = enemy.maxHealth = 1;
 
     const el = document.createElement("div");
     el.className = `enemy ${type}`;
-    el.innerHTML = `
-        <img src="${t.image}" alt="${t.name}">
-        <div class="enemy-health">
-            <div class="enemy-health-bar"><div class="enemy-health-fill"></div></div>
-        </div>`;
+    el.innerHTML = `${t.auraRadius ? `<div class="enemy-aura ${type}-aura"></div>` : ''}
+        <img src="${t.image}" alt="${t.name}" title="${t.name}">
+        ${type === 'ghost' ? '' : `<div class="enemy-health"><div class="enemy-health-bar"><div class="enemy-health-fill"></div></div></div>`}`;
     el.addEventListener("click", () => attackEnemy(enemy.id));
     enemy.element = el;
-    enemy.healthFill = el.querySelector(".enemy-health-fill");
+    enemy.healthFill = el.querySelector('.enemy-health-fill');
+    if (type === 'ghost') {
+        enemy.ghostEffectUntil = Date.now() + t.effectDuration;
+        el.classList.add('ghost-active');
+        setTimeout(() => { if (enemy.element) enemy.element.classList.remove('ghost-active'); }, t.effectDuration);
+        setTimeout(() => {
+            if (!enemy.element) return;
+            enemy.element.classList.add('ghost-leaving');
+            const rect = elements.enemiesContainer.getBoundingClientRect();
+            const side = Math.floor(Math.random() * 4);
+            if (side === 0) enemy.x = -100;
+            else if (side === 1) enemy.x = rect.width + 100;
+            else if (side === 2) enemy.y = -100;
+            else enemy.y = rect.height + 100;
+            enemy.element.style.left = enemy.x + 'px'; enemy.element.style.top = enemy.y + 'px';
+            setTimeout(() => { if (enemy.element) { removeEnemy(enemy.id); repositionAllEnemies(); } }, 600);
+        }, t.lifetime - 600);
+    }
+    if (type === 'dragon') { enemy.hasArrived = true; enemy.lastAttack = Date.now(); }
 
-    // Spawn inicial mais longe
     const spawnDistance = 450;
     const rect = elements.enemiesContainer.getBoundingClientRect();
     const side = Math.floor(Math.random() * 4);
@@ -210,7 +223,12 @@ function createEnemy(type) {
     elements.enemiesContainer.appendChild(el);
     gameState.enemies.push(enemy);
 
-    moveEnemyToPosition(enemy);
+    if (type === 'dragon') {
+        const crystal = elements.crystal.getBoundingClientRect(), box = elements.enemiesContainer.getBoundingClientRect();
+        enemy.x = crystal.left - box.left + crystal.width / 2 - 30;
+        enemy.y = crystal.top - box.top + crystal.height / 2 - 30;
+        enemy.element.style.left = enemy.x + 'px'; enemy.element.style.top = enemy.y + 'px';
+    } else moveEnemyToPosition(enemy);
     updateEnemyDisplay(enemy);
 }
 
@@ -241,13 +259,12 @@ function repositionAllEnemies() {
     });
 }
 
-// Spawn por tipo usando lastSpawnTime separado
 function spawnEnemy() {
     if (gameState.isGameOver) return;
     const now = Date.now();
     const minutes = Math.floor(gameTimer / 60);
 
-    // Espada
+    
     const swordType = gameState.enemyTypes.sword;
     const activeSwordEnemies = gameState.enemies.filter(e => e.type === 'sword').length;
     const swordInterval = ensureNumber(gameState.currentSpawnInterval.sword, swordType.baseSpawnInterval);
@@ -255,10 +272,19 @@ function spawnEnemy() {
         if (activeSwordEnemies < gameState.maxEnemiesPerType.sword) {
             createEnemy('sword');
         }
-        gameState.lastSpawnTime.sword = now; // Atualiza lastSpawnTime mesmo se não criar inimigo
+        gameState.lastSpawnTime.sword = now;
     }
 
-    // Arco (após minuto 2)
+    ['shield', 'wizard', 'ghost', 'dragon'].forEach(type => {
+        const cfg = gameState.enemyTypes[type];
+        if (gameTimer < cfg.spawnStartSecond) return;
+        const active = gameState.enemies.filter(e => e.type === type).length;
+        if (now - gameState.lastSpawnTime[type] >= gameState.currentSpawnInterval[type]) {
+            if (active < gameState.maxEnemiesPerType[type]) createEnemy(type);
+            gameState.lastSpawnTime[type] = now;
+        }
+    });
+
     const bowType = gameState.enemyTypes.bow;
     if (minutes >= bowType.spawnStartMinute) {
         const activeBowEnemies = gameState.enemies.filter(e => e.type === 'bow').length;
@@ -267,13 +293,13 @@ function spawnEnemy() {
             if (activeBowEnemies < gameState.maxEnemiesPerType.bow) {
                 createEnemy('bow');
             }
-            gameState.lastSpawnTime.bow = now; // Atualiza lastSpawnTime mesmo se não criar inimigo
+            gameState.lastSpawnTime.bow = now; 
         }
     }
 }
 
 function updateEnemyDisplay(enemy) {
-    if (!enemy.element) return;
+    if (!enemy.element || !enemy.healthFill) return;
     const pct = (enemy.health / enemy.maxHealth) * 100;
     enemy.healthFill.style.width = Math.max(0, Math.min(100, pct)) + '%';
 }
@@ -281,13 +307,45 @@ function updateEnemyDisplay(enemy) {
 function attackEnemy(id) {
     if (gameState.isGameOver || gameState.damagePerClick === 0) return;
     const enemy = gameState.enemies.find(e => e.id === id);
-    if (!enemy || !enemy.element) return;
-    enemy.health -= gameState.damagePerClick;
+    if (!enemy || !enemy.element || enemy.type === 'ghost' || isEnemyPhased(enemy)) return;
+    if (isEnemyProtected(enemy)) return;
+    enemy.health -= ['shield', 'wizard', 'dragon'].includes(enemy.type) ? 1 : gameState.damagePerClick;
     enemy.element.style.transform = 'scale(0.85)';
     setTimeout(() => { if (enemy.element) enemy.element.style.transform = 'scale(1)'; }, 120);
     if (enemy.health <= 0) { gameState.points += enemy.pointsOnDeath; removeEnemy(enemy.id); repositionAllEnemies(); }
-    else { updateEnemyDisplay(enemy); }
+    else {
+        updateEnemyDisplay(enemy);
+        if (enemy.type === 'wizard') teleportWizard(enemy);
+    }
     updateDisplay();
+}
+
+function teleportWizard(enemy) {
+    if (!enemy.element) return;
+    const rect = elements.enemiesContainer.getBoundingClientRect();
+    enemy.x = Math.random() * Math.max(1, rect.width - 60);
+    enemy.y = Math.random() * Math.max(1, rect.height - 60);
+    enemy.element.classList.add('teleporting');
+    enemy.element.style.left = enemy.x + 'px'; enemy.element.style.top = enemy.y + 'px';
+    setTimeout(() => { if (enemy.element) enemy.element.classList.remove('teleporting'); }, 250);
+}
+
+function distanceBetween(a, b) {
+    return Math.hypot((a.x || 0) - (b.x || 0), (a.y || 0) - (b.y || 0));
+}
+function isEnemyProtected(target) {
+    return gameState.enemies.some(source => source.type === 'shield' && source !== target && source.element &&
+        distanceBetween(source, target) <= gameState.enemyTypes.shield.auraRadius);
+}
+function isCrystalPhased() {
+    const c = elements.crystal.getBoundingClientRect(), box = elements.enemiesContainer.getBoundingClientRect();
+    const crystal = { x: c.left - box.left + c.width / 2 - 30, y: c.top - box.top + c.height / 2 - 30 };
+    return gameState.enemies.some(ghost => ghost.type === 'ghost' && ghost.element && Date.now() < ghost.ghostEffectUntil &&
+        distanceBetween(ghost, crystal) <= gameState.enemyTypes.ghost.auraRadius);
+}
+function isEnemyPhased(enemy) {
+    return gameState.enemies.some(ghost => ghost.type === 'ghost' && ghost !== enemy && ghost.element && Date.now() < ghost.ghostEffectUntil &&
+        distanceBetween(ghost, enemy) <= gameState.enemyTypes.ghost.auraRadius);
 }
 
 function removeEnemy(id) {
@@ -302,7 +360,17 @@ function enemiesAttackCrystal() {
     if (gameState.isGameOver) return;
     const now = Date.now();
     gameState.enemies.forEach(enemy => {
+        if (enemy.type === 'ghost' || enemy.type === 'shield' || isEnemyPhased(enemy)) return;
         if (enemy.hasArrived && now - enemy.lastAttack >= enemy.attackInterval) {
+            if (isCrystalPhased()) return;
+            if (enemy.type === 'dragon') {
+                gameState.currentHp = Math.max(0, gameState.currentHp / 2);
+                elements.crystal.classList.add('dragon-hit');
+                setTimeout(() => elements.crystal.classList.remove('dragon-hit'), 450);
+                removeEnemy(enemy.id); repositionAllEnemies();
+                if (gameState.currentHp <= 0) gameOver();
+                return;
+            }
             gameState.currentHp -= enemy.damageAmount;
             enemy.lastAttack = now;
             elements.crystal.style.filter = 'brightness(0.5)';
@@ -312,37 +380,30 @@ function enemiesAttackCrystal() {
     });
 }
 
-// Atualizações por minuto, com clamps e fallback seguros
 function updatePerMinuteMechanics() {
     const minutes = Math.floor(gameTimer / 60);
 
-    // Garante que a atualização ocorra apenas uma vez por minuto
     if (minutes === lastMinuteUpdate) return;
     lastMinuteUpdate = minutes;
 
-    // Espada
     const s = gameState.enemyTypes.sword;
     const swordHealth = s.baseHealth + (minutes * s.healthIncreasePerMinute);
     let swordInterval = s.baseSpawnInterval - (minutes * s.spawnIntervalDecreasePerMinute);
-    swordInterval = Math.max(1500, swordInterval); // Mínimo de 1.5 segundos
+    swordInterval = Math.max(1500, swordInterval); 
     gameState.currentEnemyHealth.sword = ensureNumber(swordHealth, s.baseHealth);
     gameState.currentSpawnInterval.sword = ensureNumber(swordInterval, s.baseSpawnInterval);
 
-    // Arco (vida cresce a cada 2 min)
+  
     const b = gameState.enemyTypes.bow;
     if (minutes >= b.spawnStartMinute) {
         const bowHealth = b.baseHealth + (Math.floor(minutes / 2) * b.healthIncreasePerMinute);
         let bowInterval = b.baseSpawnInterval - (minutes * b.spawnIntervalDecreasePerMinute);
-        bowInterval = Math.max(1000, bowInterval); // Mínimo de 1 segundo
+        bowInterval = Math.max(1000, bowInterval); 
         gameState.currentEnemyHealth.bow = ensureNumber(bowHealth, b.baseHealth);
         gameState.currentSpawnInterval.bow = ensureNumber(bowInterval, b.baseSpawnInterval);
     }
 
-    // Aumenta capacidade maxima gradualmente até 8 por tipo
-    // Isso pode ser ajustado para aumentar a cada minuto ou a cada X minutos
-    // Por enquanto, mantido como estava, sem incremento automático aqui.
-    // gameState.maxEnemiesPerType.sword = Math.min(8, gameState.maxEnemiesPerType.sword + 1);
-    // gameState.maxEnemiesPerType.bow = Math.min(8, gameState.maxEnemiesPerType.bow + 1);
+
 }
 
 function updateDisplay() {
@@ -403,7 +464,7 @@ function showClickEffect(heal, points) {
     if (points > 0) { if (text) text += ', '; text += `+${points} pts`; }
     elements.clickEffect.textContent = text;
     elements.clickEffect.classList.remove('show');
-    elements.clickEffect.offsetHeight; // reflow
+    elements.clickEffect.offsetHeight; 
     elements.clickEffect.classList.add('show');
     setTimeout(() => elements.clickEffect.classList.remove('show'), 600);
 }
@@ -419,7 +480,7 @@ function clickCrystal() {
 
 function applyDamage() {
     if (gameState.isGameOver) return;
-    gameState.currentHp -= gameState.damagePerTick;
+    if (!isCrystalPhased()) gameState.currentHp -= gameState.damagePerTick;
     if (gameState.currentHp <= 0) { gameState.currentHp = 0; gameOver(); }
     updateDisplay();
 }
@@ -443,14 +504,11 @@ function restartGame() {
         healPerClick: 0.1, pointsPerClick: 0, damagePerClick: 1,
         damagePerTick: 2, gameStartTime: Date.now(), isGameOver: false,
         enemies: [], nextEnemyId: 0,
-        enemyTypes: gameState.enemyTypes, // mantém definições
-        currentEnemyHealth: { sword: 3, bow: 2.5 },
-        currentSpawnInterval: {
-            sword: gameState.enemyTypes.sword.baseSpawnInterval,
-            bow: gameState.enemyTypes.bow.baseSpawnInterval
-        },
-        maxEnemiesPerType: { sword: 4, bow: 4 },
-        lastSpawnTime: { sword: 0, bow: 0 },
+        enemyTypes: gameState.enemyTypes, 
+        currentEnemyHealth: { sword: 3, bow: 2.5, shield: 5, wizard: 4, ghost: Infinity, dragon: 2 },
+        currentSpawnInterval: Object.fromEntries(Object.entries(gameState.enemyTypes).map(([k, v]) => [k, v.baseSpawnInterval])),
+        maxEnemiesPerType: { sword: 4, bow: 4, shield: 2, wizard: 2, ghost: 1, dragon: 1 },
+        lastSpawnTime: { sword: 0, bow: 0, shield: 0, wizard: 0, ghost: 0, dragon: 0 },
         upgrades: {
             maxHp: { level: 0, baseCost: 50, costMultiplier: 1.25, effect: 5 },
             healPower: { level: 0, baseCost: 60, costMultiplier: 1.25, effect: 0.1 },
@@ -459,13 +517,12 @@ function restartGame() {
         }
     };
     damageTimer = 5; gameTimer = 0;
-    lastMinuteUpdate = 0; // Resetar para garantir que updatePerMinuteMechanics seja chamado no próximo minuto
+    lastMinuteUpdate = 0; 
     elements.gameOver.style.display = 'none';
     elements.backgroundMusic.play();
     updateDisplay();
 }
 
-// Sidebars
 elements.crystal.addEventListener('click', clickCrystal);
 elements.toggleUpgrades.addEventListener('click', () => toggleSidebar(elements.upgradesSidebar));
 elements.toggleStats.addEventListener('click', () => toggleSidebar(elements.statsSidebar));
@@ -473,34 +530,31 @@ elements.closeUpgrades.addEventListener('click', () => elements.upgradesSidebar.
 elements.closeStats.addEventListener('click', () => elements.statsSidebar.classList.remove('open'));
 function toggleSidebar(sidebar){ if (sidebar.classList.contains('open')) sidebar.classList.remove('open'); else { elements.upgradesSidebar.classList.remove('open'); elements.statsSidebar.classList.remove('open'); sidebar.classList.add('open'); } }
 
-// Música
 elements.toggleMusic.addEventListener('click', () => {
     if (elements.backgroundMusic.paused) { elements.backgroundMusic.play(); elements.toggleMusic.textContent = '🎵 Música'; }
     else { elements.backgroundMusic.pause(); elements.toggleMusic.textContent = '🔇 Música'; }
 });
 
-// Upgrades
 elements.buyMaxHp.addEventListener('click', () => buyUpgrade('maxHp'));
 elements.buyHealPower.addEventListener('click', () => buyUpgrade('healPower'));
 elements.buyPointsPerClick.addEventListener('click', () => buyUpgrade('pointsPerClick'));
 elements.buyDamagePerClick.addEventListener('click', () => buyUpgrade('damagePerClick'));
 
-// Loop principal (1s)
 setInterval(() => {
     if (gameState.isGameOver) return;
     gameTimer++; damageTimer--;
     if (damageTimer <= 0) { applyDamage(); damageTimer = 5; }
     if (gameTimer > 0 && gameTimer % 300 === 0) increaseDamage();
     
-    // Chamar a função de atualização de mecânicas por minuto
     updatePerMinuteMechanics();
     
     spawnEnemy();
     enemiesAttackCrystal();
+    elements.crystal.classList.toggle('ghost-phased', isCrystalPhased());
+    gameState.enemies.forEach(e => { if (e.type !== 'ghost' && e.element) e.element.classList.toggle('ghost-phased', isEnemyPhased(e)); });
     updateDisplay();
 }, 1000);
 
-// Inicialização
 updateDisplay();
-try { elements.backgroundMusic.play(); } catch (e) { /* autoplay pode falhar até interação do usuário */ }
+try { elements.backgroundMusic.play(); } catch (e) { /* じゃがいも */ }
 

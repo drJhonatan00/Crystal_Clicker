@@ -532,3 +532,24 @@ body {
     }
 }
 
+
+/* Novos inimigos e seus efeitos de área */
+.enemy.shield { background: linear-gradient(145deg, #0754a5, #168bff, #8bd5ff); box-shadow: 0 0 22px rgba(30,144,255,.65), inset 0 0 15px rgba(255,255,255,.35); }
+.enemy.wizard { background: linear-gradient(145deg, #f8fafc, #dbeafe, #ffffff); box-shadow: 0 0 22px rgba(255,255,255,.75), inset 0 0 15px rgba(96,165,250,.3); }
+.enemy.ghost { background: radial-gradient(circle at 50% 40%, #30303b, #050509 72%); box-shadow: 0 0 24px rgba(10,10,20,.85), inset 0 0 14px rgba(180,180,220,.2); pointer-events: none; }
+.enemy.dragon { background: linear-gradient(145deg, #087f5b, #34d399, #a3e635); box-shadow: 0 0 24px rgba(16,185,129,.75), inset 0 0 15px rgba(255,255,255,.35); }
+.enemy.shield img, .enemy.wizard img, .enemy.ghost img, .enemy.dragon img { filter: drop-shadow(0 2px 3px rgba(0,0,0,.55)); }
+.enemy.wizard img { filter: drop-shadow(0 2px 3px rgba(0,0,0,.7)); }
+.enemy-aura { position:absolute; left:50%; top:50%; border-radius:50%; transform:translate(-50%,-50%); pointer-events:none; z-index:-1; }
+.shield-aura { width:250px; height:250px; border:2px solid rgba(70,170,255,.42); background:radial-gradient(circle, rgba(59,130,246,.12), rgba(59,130,246,.02) 70%, transparent 72%); box-shadow:0 0 22px rgba(59,130,246,.2); }
+.ghost-aura { width:480px; height:480px; border:2px dashed rgba(210,210,230,.35); background:radial-gradient(circle, rgba(0,0,0,.13), rgba(20,20,35,.06) 70%, transparent 72%); }
+.enemy.ghost-active { animation: ghostFloat .9s ease-in-out infinite alternate; opacity:.92; }
+@keyframes ghostFloat { from { transform:translateY(0) scale(.96); } to { transform:translateY(-7px) scale(1.04); } }
+.enemy.teleporting { opacity:.25; filter:blur(3px); }
+.enemy.ghost-phased, .crystal.ghost-phased { opacity:.42 !important; filter: grayscale(1) brightness(1.8) !important; }
+.crystal.dragon-hit { animation: dragonImpact .45s ease-out; }
+@keyframes dragonImpact { 20% { transform:translate(-50%,-50%) scale(1.14); filter:brightness(2) saturate(1.8); } 100% { transform:translate(-50%,-50%) scale(1); } }
+.enemy.shield .enemy-health-bar { border-color:#60a5fa; }
+.enemy.wizard .enemy-health-bar { border-color:#e2e8f0; }
+.enemy.dragon .enemy-health-bar { border-color:#34d399; }
+.enemy.ghost-leaving { transition: left .6s ease-in, top .6s ease-in, opacity .6s ease; opacity: 0; }
