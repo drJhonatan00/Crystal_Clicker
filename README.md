@@ -39,7 +39,7 @@ As survival time increases, enemy spawn rates intensify and dynamic audio scalin
 ## Credits & Acknowledgments
 
 - Audio: "Venus" by SketchyLogic (Licensed under CC0 / Public Domain).
-- Original Idea: Gabriel D. Vieira.
+- Original Idea: My friend Gabriel D. Vieira.
 
 ---
 
